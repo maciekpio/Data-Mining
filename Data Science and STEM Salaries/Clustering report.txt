@@ -1,0 +1,40 @@
+Clustering report
+
+Given that our dataset is a mixed set of numerical and categorical variables, it is not possible for us to execute an algorythm like k_means, since this kind of algorythms require all the variables to be numerical. Hence, we decided to use the PAM algorythm, which works pretty similarly to K-means or hierarchical clustering save that it uses the gower distance.
+In order to normalize the numerical values, we have used the scale() function in r over the numerical variables in the following way:
+df$name=scale(df$name)
+Where name is the name of the concerning variable.
+For computing the gower distance matrix we have used the daisy function:
+library(cluster)
+gower_df <- daisy(df, metric = "gower")
+It is worth mentioning that daisy() doesn't accept the data as we have it, but it needs the variables to be expressed as factors. Thus, we have used the as.factor() function over all columns:
+df$col=as.factor(df$col)
+Where col represents the concerning column.
+Aiming to get the optimal number of clusters, the silhouette function has been used as follows:
+silhouette <- c()
+silhouette = c(silhouette, NA)
+for(i in 2:10){
+  pam_clusters = pam(as.matrix(gower_df),
+                 diss = TRUE,
+                 k = i)
+  silhouette = c(silhouette ,pam_clusters$silinfo$avg.width)
+}
+plot(1:10, silhouette,
+     xlab = "Clusters",
+     ylab = "Silhouette Width")
+lines(1:10, silhouette)
+We found that the optimal number of clusters was 2, and so we executed the PAM algorythm with 2 clusters:
+df2 = pam(gower_df, diss = TRUE, k = 2)
+Our medoids are row 2733 and row 3068:
+df2$medoids
+That means that this rows symbolize the mean of each variable in each of the clusters:
+cluster 1:
+initial_dataset[2733,]
+2733  Others    L5 Software Engineer                  350000  REGION4 5              0 Distributed Systems (Back-End)          0 0     0   Male White Bachelor's Degree
+cluster 2:
+initial_dataset[3068,]
+3068  Others    L4 Software Engineer                  147000  REGION4 2              0 Full Stack     137000               0 10000   Male Asian Master's Degree
+
+Visualization (pending)
+
+https://towardsdatascience.com/clustering-datasets-having-both-numerical-and-categorical-variables-ed91cdca0677
